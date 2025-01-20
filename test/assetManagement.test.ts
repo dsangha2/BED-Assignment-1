@@ -1,4 +1,4 @@
-import { findLargestHolding, Asset } from "../src/portfolio/assetManagement";
+import { findLargestHolding, Asset, calculateAssetAllocation } from "../src/portfolio/assetManagement";
 
 describe("Asset Management Tests", () => {
 
@@ -24,26 +24,43 @@ describe("Asset Management Tests", () => {
             expect(result).toEqual({ name: "Gold", value: 10000 });
         });
     });
-});
 
-export function calculateAssetAllocation(assets: Asset[]): { name: string, percentage: number }[] {
-    let totalValue = 0;
+    describe("calculateAssetAllocation", () => {
+        it("should correctly calculate asset allocation percentages", () => {
+            const assets: Asset[] = [
+                { name: "Stocks", value: 6000 },
+                { name: "Bonds", value: 4000 }
+            ];
 
-    for (const asset of assets) {
-        totalValue += asset.value;
-    }
-
-    if (totalValue === 0) {
-        return assets.map(asset => ({ name: asset.name, percentage: 0 }));
-    }
-
-    const allocation = [];
-    for (const asset of assets) {
-        allocation.push({
-            name: asset.name,
-            percentage: Number(((asset.value / totalValue) * 100).toFixed(2)),
+            const result = calculateAssetAllocation(assets);
+            expect(result).toEqual([
+                { name: "Stocks", percentage: 60 },
+                { name: "Bonds", percentage: 40 }
+            ]);
         });
-    }
 
-    return allocation;
-}
+        it("should return 0% for all assets when total value is 0", () => {
+            const assets: Asset[] = [
+                { name: "Stocks", value: 0 },
+                { name: "Bonds", value: 0 }
+            ];
+
+            const result = calculateAssetAllocation(assets);
+            expect(result).toEqual([
+                { name: "Stocks", percentage: 0 },
+                { name: "Bonds", percentage: 0 }
+            ]);
+        });
+
+        it("should handle a portfolio with only one asset", () => {
+            const assets: Asset[] = [
+                { name: "Crypto", value: 10000 }
+            ];
+
+            const result = calculateAssetAllocation(assets);
+            expect(result).toEqual([
+                { name: "Crypto", percentage: 100 }
+            ]);
+        });
+    });
+});
